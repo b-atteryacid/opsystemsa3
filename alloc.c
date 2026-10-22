@@ -87,15 +87,28 @@ phys_clicks clicks;
 	register struct hole *best_hole, *prev_best_hole;
 	phys_clicks old_base;
 
+	hp = hole_head;
 	best_hole = hp;
-	while(hp->h_next != NIL_HOLE) {
+	prev_ptr = NIL_HOLE;
+	prev_best_hole = NIL_HOLE;
 
+	while(hp->h_next != NIL_HOLE) {
 		if(hp->h_len < best_hole->h_len && hp->h_len >= clicks) {
+			prev_best_hole = prev_ptr;
 			best_hole = hp;
 		}
-
+		prev_ptr = hp;
 		hp = hp->h_next;
 	}
+
+	old_base = best_hole->h_base;
+	best_hole->h_base += clicks;
+	best_hole->h_len -= clicks;
+	if(best_hole->h_len == 0) {
+		del_slot(prev_best_hole,best_hole);
+	}
+
+	return old_base;
 
 	/* <<TODO>> */
 
