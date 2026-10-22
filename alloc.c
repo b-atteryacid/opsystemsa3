@@ -88,12 +88,12 @@ phys_clicks clicks;
 	phys_clicks old_base;
 
 	hp = hole_head;
-	best_hole = hp;
+	best_hole = NIL_HOLE;
 	prev_ptr = NIL_HOLE;
 	prev_best_hole = NIL_HOLE;
 
 	while(hp->h_next != NIL_HOLE) {
-		if(hp->h_len < best_hole->h_len && hp->h_len >= clicks) {
+		if(hp->h_len >= clicks && (best_hole == NIL_HOLE || p->h_len < best_hole->h_len)) {
 			prev_best_hole = prev_ptr;
 			best_hole = hp;
 		}
@@ -101,16 +101,15 @@ phys_clicks clicks;
 		hp = hp->h_next;
 	}
 
-	old_base = best_hole->h_base;
-	best_hole->h_base += clicks;
-	best_hole->h_len -= clicks;
-	if(best_hole->h_len == 0) {
-		del_slot(prev_best_hole,best_hole);
+	if(best_hole != NIL_HOLE) {
+		old_base = best_hole->h_base;
+		best_hole->h_base += clicks;
+		best_hole->h_len -= clicks;
+		if(best_hole->h_len == 0) {
+			del_slot(prev_best_hole,best_hole);
+		}
+		return old_base;
 	}
-
-	return old_base;
-
-	/* <<TODO>> */
 
 	/* Failed to find sufficient memory. */
 	return (NO_MEM);
