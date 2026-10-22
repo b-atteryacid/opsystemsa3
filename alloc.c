@@ -108,7 +108,7 @@ phys_clicks clicks;
 		if(best_hole->h_len == 0) {
 			del_slot(prev_best_hole,best_hole);
 		}
-		return old_base;
+		return (old_base);
 	}
 
 	/* Failed to find sufficient memory. */
@@ -125,10 +125,33 @@ phys_clicks clicks;
 	register struct hole *worst_hole, *prev_worst_hole;
 	phys_clicks old_base;
 
-	/* <<TODO>> */
+	hp = hole_head;
+	worst_hole = NIL_HOLE;
+	prev_ptr = NIL_HOLE;
+	prev_worst_hole = NIL_HOLE;
+
+	while(hp->h_next != NIL_HOLE) {
+		if(hp->h_len >= clicks && (worst_hole == NIL_HOLE || p->h_len > worst_hole->h_len)) {
+			prev_worst_hole = prev_ptr;
+			worst_hole = hp;
+		}
+		prev_ptr = hp;
+		hp = hp->h_next;
+	}
+
+	if(worst_hole != NIL_HOLE) {
+		old_base = worst_hole->h_base;
+		worst_hole->h_base += clicks;
+		worst_hole->h_len -= clicks;
+		if(worst_hole->h_len == 0) {
+			del_slot(prev_worst_hole,worst_hole);
+		}
+		return (old_base);
+	}
 
 	/* Failed to find sufficient memory. */
 	return (NO_MEM);
+}
 }
 
 /*===========================================================================*
