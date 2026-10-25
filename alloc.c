@@ -41,7 +41,7 @@ enum ALLOC_ALG {
 	WORST_FIT_ALLOC_ALG
 };
 
-const enum ALLOC_ALG ALLOC_ALG = WORST_FIT_ALLOC_ALG;
+const enum ALLOC_ALG ALLOC_ALG = BEST_FIT_ALLOC_ALG;
 
 PRIVATE struct hole {
   struct hole *h_next;		/* pointer to next entry on the list */
@@ -93,7 +93,7 @@ phys_clicks clicks;
 		prev_ptr = NIL_HOLE;
 		prev_best_hole = NIL_HOLE;
 
-		while(hp->h_next != NIL_HOLE) {
+		while(hp != NIL_HOLE) {
 			if(hp->h_len >= clicks && (best_hole == NIL_HOLE || hp->h_len < best_hole->h_len)) {
 				prev_best_hole = prev_ptr;
 				best_hole = hp;
@@ -133,7 +133,7 @@ phys_clicks clicks;
 		prev_ptr = NIL_HOLE;
 		prev_worst_hole = NIL_HOLE;
 
-		while(hp->h_next != NIL_HOLE) {
+		while(hp != NIL_HOLE) {
 			if(hp->h_len >= clicks && (worst_hole == NIL_HOLE || hp->h_len > worst_hole->h_len)) {
 				prev_worst_hole = prev_ptr;
 				worst_hole = hp;
