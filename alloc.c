@@ -32,7 +32,7 @@
 /* Used to print out the hole list for every allocation.
  * This floods the console with alot of information, so it should only be enabled when attempting to confirm if the selected algorithm is working as expected.
  */
-#define PRINT_HOLE_LIST 1
+#define PRINT_HOLE_LIST 0
 
 /* Determines which allocation algorithm to utilize. */
 enum ALLOC_ALG {
