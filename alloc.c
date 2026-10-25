@@ -32,7 +32,7 @@
 /* Used to print out the hole list for every allocation.
  * This floods the console with alot of information, so it should only be enabled when attempting to confirm if the selected algorithm is working as expected.
  */
-#define PRINT_HOLE_LIST 0
+#define PRINT_HOLE_LIST 1
 
 /* Determines which allocation algorithm to utilize. */
 enum ALLOC_ALG {
@@ -41,7 +41,7 @@ enum ALLOC_ALG {
 	WORST_FIT_ALLOC_ALG
 };
 
-const enum ALLOC_ALG ALLOC_ALG = FIRST_FIT_ALLOC_ALG;
+const enum ALLOC_ALG ALLOC_ALG = WORST_FIT_ALLOC_ALG;
 
 PRIVATE struct hole {
   struct hole *h_next;		/* pointer to next entry on the list */
@@ -87,29 +87,31 @@ phys_clicks clicks;
 	register struct hole *best_hole, *prev_best_hole;
 	phys_clicks old_base;
 
-	hp = hole_head;
-	best_hole = NIL_HOLE;
-	prev_ptr = NIL_HOLE;
-	prev_best_hole = NIL_HOLE;
+	do {
+		hp = hole_head;
+		best_hole = NIL_HOLE;
+		prev_ptr = NIL_HOLE;
+		prev_best_hole = NIL_HOLE;
 
-	while(hp->h_next != NIL_HOLE) {
-		if(hp->h_len >= clicks && (best_hole == NIL_HOLE || p->h_len < best_hole->h_len)) {
-			prev_best_hole = prev_ptr;
-			best_hole = hp;
+		while(hp->h_next != NIL_HOLE) {
+			if(hp->h_len >= clicks && (best_hole == NIL_HOLE || hp->h_len < best_hole->h_len)) {
+				prev_best_hole = prev_ptr;
+				best_hole = hp;
+			}
+			prev_ptr = hp;
+			hp = hp->h_next;
 		}
-		prev_ptr = hp;
-		hp = hp->h_next;
-	}
 
-	if(best_hole != NIL_HOLE) {
-		old_base = best_hole->h_base;
-		best_hole->h_base += clicks;
-		best_hole->h_len -= clicks;
-		if(best_hole->h_len == 0) {
-			del_slot(prev_best_hole,best_hole);
+		if(best_hole != NIL_HOLE) {
+			old_base = best_hole->h_base;
+			best_hole->h_base += clicks;
+			best_hole->h_len -= clicks;
+			if(best_hole->h_len == 0) {
+				del_slot(prev_best_hole,best_hole);
+			}
+			return (old_base);
 		}
-		return (old_base);
-	}
+	} while(swap_out());
 
 	/* Failed to find sufficient memory. */
 	return (NO_MEM);
@@ -125,33 +127,35 @@ phys_clicks clicks;
 	register struct hole *worst_hole, *prev_worst_hole;
 	phys_clicks old_base;
 
-	hp = hole_head;
-	worst_hole = NIL_HOLE;
-	prev_ptr = NIL_HOLE;
-	prev_worst_hole = NIL_HOLE;
+	do {
+		hp = hole_head;
+		worst_hole = NIL_HOLE;
+		prev_ptr = NIL_HOLE;
+		prev_worst_hole = NIL_HOLE;
 
-	while(hp->h_next != NIL_HOLE) {
-		if(hp->h_len >= clicks && (worst_hole == NIL_HOLE || p->h_len > worst_hole->h_len)) {
-			prev_worst_hole = prev_ptr;
-			worst_hole = hp;
+		while(hp->h_next != NIL_HOLE) {
+			if(hp->h_len >= clicks && (worst_hole == NIL_HOLE || hp->h_len > worst_hole->h_len)) {
+				prev_worst_hole = prev_ptr;
+				worst_hole = hp;
+			}
+			prev_ptr = hp;
+			hp = hp->h_next;
 		}
-		prev_ptr = hp;
-		hp = hp->h_next;
-	}
 
-	if(worst_hole != NIL_HOLE) {
-		old_base = worst_hole->h_base;
-		worst_hole->h_base += clicks;
-		worst_hole->h_len -= clicks;
-		if(worst_hole->h_len == 0) {
-			del_slot(prev_worst_hole,worst_hole);
+		if(worst_hole != NIL_HOLE) {
+			old_base = worst_hole->h_base;
+			worst_hole->h_base += clicks;
+			worst_hole->h_len -= clicks;
+			if(worst_hole->h_len == 0) {
+				del_slot(prev_worst_hole,worst_hole);
+			}
+			return (old_base);
 		}
-		return (old_base);
-	}
+	} while(swap_out());
 
 	/* Failed to find sufficient memory. */
 	return (NO_MEM);
-}
+
 }
 
 /*===========================================================================*
